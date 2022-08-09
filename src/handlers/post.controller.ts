@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getAllPostsService, getPostByIdService } from "../services/post.service";
+import { createPostService, deletePostService, getAllPostsService, getPostByIdService, getPostsByUserIdService, updatePostService } from "../services/post.service";
 
 
 export const getAllPostsHnadler = async (req: Request, res: Response): Promise<void> => {
@@ -31,8 +31,9 @@ export const getPostByIdHandler = async (req: Request, res: Response): Promise<v
 /** @handler handle create post */
 export const createPostHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { title, content, user_id } = req.body;
-        const post = await createPostService(title, content, user_id);
+        const user_id = res.locals.user.id;
+        const { title, content } = req.body;
+        const post = await createPostService({ title, content, user_id });
         res.send(post);
     } catch (error: unknown) {
         const { message } = error as { message: string }
@@ -44,9 +45,10 @@ export const createPostHandler = async (req: Request, res: Response): Promise<vo
 /** @handler handle Update post */
 export const updatePostHandler = async (req: Request, res: Response): Promise<void> => {
     try {
+        const user_id = res.locals.user.id;
         const { id } = req.params as unknown as { id: number };
-        const { title, content, user_id } = req.body;
-        const post = await updatePostService(title, content, user_id, id);
+        const { title, content } = req.body;
+        const post = await updatePostService({ title, content, user_id, id });
         res.send(post);
     } catch (error: unknown) {
         const { message } = error as { message: string }
@@ -62,6 +64,20 @@ export const deletePostHandler = async (req: Request, res: Response): Promise<vo
         const { id } = req.params as unknown as { id: number };
         const post = await deletePostService(id);
         res.send(post);
+    } catch (error: unknown) {
+        const { message } = error as { message: string }
+        res.status(400).send({
+            "message": message
+        });
+    }
+}
+
+/** @handler handle get posts of user by user_id */
+export const getPostsByUserIdHandler = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { user_id } = req.params as unknown as { user_id: number };
+        const userWithPosts = await getPostsByUserIdService(user_id);
+        res.send(userWithPosts);
     } catch (error: unknown) {
         const { message } = error as { message: string }
         res.status(400).send({

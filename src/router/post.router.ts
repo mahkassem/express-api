@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { createPostHandler, deletePostHandler, getAllPostsHnadler, getPostByIdHandler, getPostsByUserIdHandler, updatePostHandler } from "../handlers/post.controller";
+import { authGuard } from "../middlewares/auth.middleware";
+import { createPostValidation, updatePostValidation } from "../validations/post.validation";
 
 const postRouter = Router();
 
@@ -8,27 +11,37 @@ const postRouter = Router();
  */
 postRouter.get(
     "/:id",
-    // get port by id handler
+    getPostByIdHandler
+)
+
+postRouter.get(
+    "/by-user/:user_id",
+    getPostsByUserIdHandler
 )
 
 postRouter.get(
     "/",
-    // get all posts handler
+    getAllPostsHnadler
 )
 
 postRouter.post(
     "/",
-    // create post handler
+    authGuard,
+    createPostValidation,
+    createPostHandler
 )
 
 postRouter.put(
     "/:id",
-    // update post handler
+    authGuard,
+    updatePostValidation,
+    updatePostHandler
 )
 
 postRouter.delete(
     "/:id",
-    // delete post handler
+    authGuard,
+    deletePostHandler
 )
 
 export default postRouter;

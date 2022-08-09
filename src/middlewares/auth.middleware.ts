@@ -1,20 +1,22 @@
 import { NextFunction, Request, Response } from "express"
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import authConfig from "../config/auth.config";
+import { TokenPayload } from "../models/auth.model";
 import { getUserByEmail } from "../entities/user.entity";
 
 /** @middleware protected route */
 export const authGuard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        let token = req.headers.authorization;
-        if (!token) throw new Error("Unauthorized");
-        token = token.split(" ")[1];
+        let tokenHeader = req.headers.authorization;
+
+        if (!tokenHeader) throw new Error("Unauthorized");
+        const token = tokenHeader.split(" ")[1];
 
         // verify token
-        const payload: JwtPayload = jwt.verify(token, authConfig.jwtSecret as string) as JwtPayload;
+        const payload: TokenPayload = jwt.verify(token, authConfig.jwtSecret) as TokenPayload;
 
         // check if user exists
-        const user = await getUserByEmail(payload.sub as string);
+        const user = await getUserByEmail(payload.sub);
         if (!user) throw new Error("Unauthorized");
 
         // attach user to request

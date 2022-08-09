@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { isTitleUnique } from "../entities/posts.entity";
+import { getPostByTitle } from "../entities/posts.entity";
 import { getUserById } from "../entities/user.entity";
 
 /** @middleware validate create post request */
 export const createPostValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let errorsBag: string[] = [];
 
-    const { title, user_id } = req.body;
+    const user_id = res.locals.user.id;
+    const { title } = req.body;
 
     // check if user id is set and is a number
     if (!user_id) {
@@ -22,8 +23,8 @@ export const createPostValidation = async (req: Request, res: Response, next: Ne
     // check if title is set
     if (!title) errorsBag.push("title is required");
     // check if title is unique
-    const isUnique = await isTitleUnique(title);
-    if (!isUnique) errorsBag.push("title must be unique");
+    const isUnique = await getPostByTitle(title);
+    if (isUnique) errorsBag.push("title must be unique");
     // check for title length
     if (title && title.length < 5) errorsBag.push("title must be at least 5 characters");
     // title accept only letters and numbers
@@ -44,7 +45,8 @@ export const createPostValidation = async (req: Request, res: Response, next: Ne
 export const updatePostValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let errorsBag: string[] = [];
 
-    const { title, user_id } = req.body;
+    const { title } = req.body;
+    const user_id = res.locals.user.id;
 
     // check if user id is set and is a number
     if (!user_id) {
@@ -60,8 +62,8 @@ export const updatePostValidation = async (req: Request, res: Response, next: Ne
     // check if title is set
     if (!title) errorsBag.push("title is required");
     // check if title is unique
-    const isUnique = await isTitleUnique(title);
-    if (!isUnique) errorsBag.push("title must be unique");
+    const isUnique = await getPostByTitle(title);
+    if (isUnique && isUnique.id != Number(req.params.id)) errorsBag.push("title must be unique");
     // check for title length
     if (title && title.length < 5) errorsBag.push("title must be at least 5 characters");
     // title accept only letters and numbers

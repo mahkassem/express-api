@@ -16,4 +16,7 @@ interface AuthUser {
 export interface TokenPayload {
     sub: string;
     name: string;
+    iat?: number;
+    exp?: number;
+    iss?: string;
 }

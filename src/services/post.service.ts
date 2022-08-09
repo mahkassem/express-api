@@ -1,7 +1,10 @@
-import { getAllPosts, getPostById, isTitleUnique, createPost, updatePost, deletePost } from "../entities/post.entity";
+import { createPost, deletePost, getAllPosts, getPostById, getPostsByUserId, updatePost } from "../entities/posts.entity";
+import { getUserById } from "../entities/user.entity";
 import { Post } from "../models/post.model";
+import { User } from "../models/user.model";
+import { sanitizedUserResponse } from "../utils/helpers";
 
-export const getPostByIdService = async (id: number): Promise<void> => {
+export const getPostByIdService = async (id: number): Promise<Post> => {
     try {
         const post = await getPostById(id)
         return post
@@ -10,7 +13,7 @@ export const getPostByIdService = async (id: number): Promise<void> => {
     }
 }
 
-export const getAllPostsService = async () : Promise<Post> => {
+export const getAllPostsService = async () : Promise<Post[]> => {
     try {
         const posts = await getAllPosts();
         return posts; 
@@ -19,37 +22,41 @@ export const getAllPostsService = async () : Promise<Post> => {
     }
 }
 
-export const isTitleUniqueService = async (title: string): Promise<Boolean> => {
+export const createPostService = async (post: Post): Promise<Post> => {
     try {
-        const result = await isTitleUnique(id)
+        const result = await createPost(post)
         return result
     } catch (err) {
-        throw new Error(`Error: Title is not unique. ${err}`)
+        throw new Error(`Error: Could not create post. ${err}`)
     }
 }
 
-export const createPostService = async () : Promise<Post> => {
+export const updatePostService = async (post: Post): Promise<Post> => {
     try {
-        c
-    } catch {
-        
-    }
-}
-
-export const updatePostService = async (post: Post): Promise<void> => {
-    try {
-        const post = await updatePost(id)
-        return post
+        const result = await updatePost(post)
+        return result
     } catch (err) {
         throw new Error(`Error: Could not update post. ${err}`)
     }
 }
 
-export const deletePostService = async (post: Post) : Promise<Post> => {
+export const deletePostService = async (id: number): Promise<boolean> => {
     try {
-        const post = await deletePost();
-        return post; 
+        const result = await deletePost(id)
+        return result
+    } catch (err) {
+        throw new Error(`Error: Could not delete post. ${err}`)
+    }
+}
+
+export const getPostsByUserIdService = async (user_id: number): Promise<User> => {
+    try {
+        let user = await getUserById(user_id);
+        const posts = await getPostsByUserId(user_id);
+        user.posts = posts;
+        user = sanitizedUserResponse(user);
+        return user;
     } catch (error) {
-        throw new Error(`Error: Could not delete post. ${err}`);
+        throw new Error(`can not get the posts`);
     }
 }
